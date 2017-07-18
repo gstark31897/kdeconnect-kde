@@ -22,6 +22,25 @@
 #include <QFileDialog>
 #include <KLocalizedString>
 
+#include <iostream>
+
+class MessageAction : public QAction
+{
+Q_OBJECT
+public:
+    MessageAction(DeviceDbusInterface* device)
+        : QAction(nullptr)
+    {
+        std::cout << "Message" << std::endl;
+
+        update();
+    }
+
+    void update() {
+        setText(i18n("Test Messaging"));
+    }
+};
+
 class BatteryAction : public QAction
 {
 Q_OBJECT
@@ -35,6 +54,8 @@ public:
 
         connect(m_batteryIface, SIGNAL(chargeChanged(int)), this, SLOT(setCharge(int)));
         connect(m_batteryIface, SIGNAL(stateChanged(bool)), this, SLOT(setCharging(bool)));
+
+        std::cout << "Battery" << std::endl;
 
         update();
     }
@@ -76,6 +97,9 @@ DeviceIndicator::DeviceIndicator(DeviceDbusInterface* device)
     setWhenAvailable(device->hasPlugin("kdeconnect_battery"),
                      [this, battery](bool available) { battery->setVisible(available);  }
                      , this);
+
+    auto message = new MessageAction(device);
+    addAction(message);
 
     auto browse = addAction(i18n("Browse device"));
     connect(browse, &QAction::triggered, device, [device](){
